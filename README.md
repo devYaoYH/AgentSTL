@@ -1,3 +1,21 @@
+# Agents STL-ish
+
+The goal of this open repository is to implement commonly-used search agent algorithms in a problem-agnostic way such we can run these just like STL algorithms on a specified 'Game' class for different problems.
+
+Currently, the list of implemented algorithms:
+- weighted-A*
+- [WIP] Minimax
+- [WIP] Expectimax
+- [WIP] Monte-Carlo-Tree-Search
+
+Furthermore, presently, the following problems are available:
+- NPuzzle: Sliding-Tile puzzle
+- Sokoban: Box-pushing puzzle (credits to original game developer - Thinking Rabbit)
+
+Lastly, I have also included a wrapper class `PlayableGame` such that any `Game` that specifies string-identified actions can be played via the console. See `sokoban_play.cpp` and `npuzzle_play.cpp` for samples.
+
+*A python visualizer/GUI for `PlayableGame` is WIP*
+
 ## Infrastructure overview
 
 In this project, I will use the following vernacular:
@@ -44,16 +62,20 @@ class Game{
     public:
         // Get current game state (to play) -> Constant function (no dynamic changes)
         virtual std::shared_ptr<State> get_state() = 0;
+        // Get goal state (if any)
+        virtual std::shared_ptr<State> get_goal_state() = 0;
         // Check if state passed to the game is Goal
-        virtual bool is_goal_state(State* s) = 0;
+        virtual bool is_goal_state(const State* s) = 0;
         // Get successors stored into vector of States given starting state
-        virtual int get_successors(State* s, std::vector<std::pair<std::shared_ptr<State>,std::shared_ptr<Action>>> &v) = 0;
+        virtual int get_successors(const State* s, std::vector<std::pair<std::shared_ptr<State>,std::shared_ptr<Action>>> &v) = 0;
         // Get legal moves stored into vector of Actions given starting state
-        virtual int get_actions(State* s, std::vector<std::shared_ptr<Action>> &v) = 0;
-        // Play a game action
-        virtual int play(Action* a) = 0;
+        virtual int get_actions(const State* s, std::vector<std::shared_ptr<Action>> &v) = 0;
         // Display current game state
         virtual void display(std::ostream& os) = 0;
+        // Play a game action
+        virtual int play(Action* a) = 0;
+        // Play a game action on top of a given state
+        virtual bool play_action(State* s, Action* a) = 0;
         // Constructor | Destructors
         Game():_state(nullptr){};
         virtual ~Game(){delete _state;};
