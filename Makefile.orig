@@ -1,0 +1,63 @@
+# Setup for Yiheng's local VM
+#CC=/usr/bin/clang
+#CXX=/usr/bin/clang++
+CC=gcc
+CXX=g++
+ 
+# vanilla cilk plus runtime location
+CILK_LIBS=/usr/lib/x86_64-linux-gnu
+#OPT_FLAGS = -ggdb3 -O0
+OPT_FLAGS = -O3
+CILK_FLAGS = $(OPT_FLAGS) -fcilkplus -std=c++11
+LIBS = -L$(CILK_LIBS) -Wl,-rpath -Wl,$(CILK_LIBS) -lcilkrts -lpthread -lrt -lm
+
+# Make from subdirectories
+VPATH = src/game src/agent src/heuristic test
+
+BUILDDIR = build/
+
+PROGS = sokoban sokoban_test npuzzle npuzzle_test astar astar_sokoban mha mha_sokoban pmha pmha_sokoban search
+
+all:: $(PROGS)
+
+$(BUILDDIR)/%.o: %.cpp
+	$(CXX) $(CILK_FLAGS) $< -o $@ -c
+
+search: $(BUILDDIR)/Game.o $(BUILDDIR)/NPuzzleHeuristic.o $(BUILDDIR)/NilssonSequence.o $(BUILDDIR)/PatternDatabaseHeuristic.o $(BUILDDIR)/ManhattanHeuristic.o $(BUILDDIR)/Agent.o $(BUILDDIR)/NPuzzle.o $(BUILDDIR)/MhaAgent.o $(BUILDDIR)/AstarSearchAgent.o $(BUILDDIR)/ParallelMhaAgent.o $(BUILDDIR)/main.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^ $(LIBS)
+
+npuzzle_test: $(BUILDDIR)/Game.o $(BUILDDIR)/NPuzzleHeuristic.o $(BUILDDIR)/NilssonSequence.o $(BUILDDIR)/PatternDatabaseHeuristic.o $(BUILDDIR)/ManhattanHeuristic.o $(BUILDDIR)/Agent.o $(BUILDDIR)/NPuzzle.o $(BUILDDIR)/MhaAgent.o $(BUILDDIR)/AstarSearchAgent.o $(BUILDDIR)/ParallelMhaAgent.o $(BUILDDIR)/npuzzle_test.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^ $(LIBS)
+
+sokoban_test: $(BUILDDIR)/Game.o $(BUILDDIR)/SokobanHeuristic.o $(BUILDDIR)/SokobanGoalPathHeuristic.o $(BUILDDIR)/SokobanPatternDatabaseHeuristic.o $(BUILDDIR)/Agent.o $(BUILDDIR)/Sokoban.o $(BUILDDIR)/MhaAgent.o $(BUILDDIR)/AstarSearchAgent.o $(BUILDDIR)/ParallelMhaAgent.o $(BUILDDIR)/sokoban_test.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^ $(LIBS)
+
+sokoban: $(BUILDDIR)/Game.o $(BUILDDIR)/PlayableGame.o $(BUILDDIR)/PlayerAgent.o $(BUILDDIR)/Agent.o $(BUILDDIR)/Sokoban.o $(BUILDDIR)/sokoban_play.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^
+
+npuzzle: $(BUILDDIR)/Game.o $(BUILDDIR)/PlayableGame.o $(BUILDDIR)/PlayerAgent.o $(BUILDDIR)/Agent.o $(BUILDDIR)/NPuzzle.o $(BUILDDIR)/npuzzle_play.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^
+
+astar: $(BUILDDIR)/Game.o $(BUILDDIR)/NPuzzleHeuristic.o $(BUILDDIR)/AstarSearchAgent.o $(BUILDDIR)/Agent.o $(BUILDDIR)/NPuzzle.o $(BUILDDIR)/astar_test.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^
+
+mha: $(BUILDDIR)/Game.o $(BUILDDIR)/NPuzzleHeuristic.o $(BUILDDIR)/NilssonSequence.o $(BUILDDIR)/PatternDatabaseHeuristic.o $(BUILDDIR)/Agent.o $(BUILDDIR)/NPuzzle.o $(BUILDDIR)/MhaAgent.o $(BUILDDIR)/mha_test.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^
+
+pmha: $(BUILDDIR)/Game.o $(BUILDDIR)/NPuzzleHeuristic.o $(BUILDDIR)/NilssonSequence.o $(BUILDDIR)/PatternDatabaseHeuristic.o $(BUILDDIR)/ManhattanHeuristic.o $(BUILDDIR)/NPuzzle.o $(BUILDDIR)/Agent.o $(BUILDDIR)/MhaAgent.o $(BUILDDIR)/ParallelMhaAgent.o $(BUILDDIR)/pmha_test.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^ $(LIBS)
+
+astar_sokoban: $(BUILDDIR)/Game.o $(BUILDDIR)/SokobanHeuristic.o $(BUILDDIR)/AstarSearchAgent.o $(BUILDDIR)/Agent.o $(BUILDDIR)/Sokoban.o $(BUILDDIR)/astar_sokoban.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^
+
+mha_sokoban: $(BUILDDIR)/Game.o $(BUILDDIR)/SokobanHeuristic.o $(BUILDDIR)/Agent.o $(BUILDDIR)/Sokoban.o $(BUILDDIR)/MhaAgent.o $(BUILDDIR)/mha_sokoban.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^
+
+pmha_sokoban: $(BUILDDIR)/Game.o $(BUILDDIR)/SokobanHeuristic.o $(BUILDDIR)/Sokoban.o $(BUILDDIR)/Agent.o $(BUILDDIR)/MhaAgent.o $(BUILDDIR)/ParallelMhaAgent.o $(BUILDDIR)/pmha_sokoban.o
+	$(CXX) $(CILK_FLAGS) -o $@ $^ $(LIBS)
+
+clean::
+	-rm -f $(PROGS) *.o $(BUILDDIR)/*.o
+
+rebuild::
+	make clean;make
