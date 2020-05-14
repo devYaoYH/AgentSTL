@@ -1,10 +1,6 @@
 #include "src/game/Sokoban.h"
 #include "src/heuristic/SokobanHeuristic.h"
-#include "src/heuristic/SokobanGoalPathHeuristic.h"
-#include "src/heuristic/SokobanPatternDatabaseHeuristic.h"
 #include "src/agent/AstarSearchAgent.h"
-#include "src/agent/MhaAgent.h"
-#include "src/agent/ParallelMhaAgent.h"
 #include <getopt.h>
 #include <iostream>
 #include <fstream>
@@ -18,7 +14,7 @@
 //Note: exposing shared_ptr<>.get() pointer is probably a bad design pattern...
 
 int help(){
-    printf("Usage:  ./sokoban_test -p <astar|simha|pimha|all> [-f: level file]\n");
+    printf("Usage:  ./sokoban_test -p <astar|all> [-f: level file]\n");
     return 1;
 }
 
@@ -57,8 +53,7 @@ int main(int argc, char* argv[]){
     std::cout << std::endl;
 
     // Check if we have agent (save us some startup time)
-    if (algo.compare("all") && algo.compare("astar") && algo.compare("simha") && 
-        algo.compare("pimha") && algo.compare("all")){
+    if (algo.compare("all") && algo.compare("astar") && algo.compare("all")){
         return help();
     }
 
@@ -199,46 +194,18 @@ int main(int argc, char* argv[]){
 
     // Grab a puzzle heuristic class
     Heuristic* sokoban_heu = new SokobanHeuristic();
-
-    // This one might be admissible actually, a tighter lower-bound estimation
-    Heuristic* sokoban_path_blocking_heu = new SokobanGoalPathHeuristic();
-    std::vector<Heuristic*> hs{sokoban_heu, sokoban_path_blocking_heu};
-
-    // std::vector<Heuristic*> hs{sokoban_heu};
-
-    // Generate PatternDatabases for the given Sokoban level
-    SokobanPatternDatabaseHeuristicBuilder* sok_db_builder = new SokobanPatternDatabaseHeuristicBuilder(sokoban);
-    int pattern_seed = 0;
-    // Build 50 random solved states
-    while (hs.size() < SOK_DB_LIM + 2){
-        // .build() returns a raw pointer to SokobanPatternDatabaseHeuristic
-        // which is just a wrapper to do state-state distance comparison
-        Heuristic* new_hs = sok_db_builder->build(++pattern_seed);
-        if (new_hs) hs.push_back(new_hs);
-    }
-
-    std::cerr << "Databases Seeded, starting search" << std::endl;
+    std::vector<Heuristic*> hs = {sokoban_heu};
 
     // Start our search agent (initialize with problem & heuristic)
     // Spawn search agents based on input string
     std::vector<Agent*> agents;
     if (algo.compare("all") == 0){
         Agent* astar_search = new AstarSearchAgent(sokoban, sokoban_heu, weight);
-        Agent* simha = new SerialImhaSearchAgent(sokoban, hs, weight);
-        Agent* pimha = new ParallelImhaSearchAgent(sokoban, hs, weight);
-        agents.push_back(astar_search); agents.push_back(simha); agents.push_back(pimha);
+        agents.push_back(astar_search);
     }
     else if (algo.compare("astar") == 0){
         Agent* astar_search = new AstarSearchAgent(sokoban, sokoban_heu, weight);
         agents.push_back(astar_search);
-    }
-    else if (algo.compare("simha") == 0){
-        Agent* simha = new SerialImhaSearchAgent(sokoban, hs, weight);
-        agents.push_back(simha);
-    }
-    else if (algo.compare("pimha") == 0){
-        Agent* pimha = new ParallelImhaSearchAgent(sokoban, hs, weight);
-        agents.push_back(pimha);
     }
     else{
         return help();
@@ -279,6 +246,5 @@ int main(int argc, char* argv[]){
     for(int i = 0; i<hs.size(); i++){
         delete hs[i];
     }
-    delete sok_db_builder;
     return status;
 }

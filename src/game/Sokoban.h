@@ -11,8 +11,6 @@
 #include <sstream>
 #include <limits>
 
-#define DEBUG
-
 // We appear to need a hash for pair (stl doesn't have one o.O)
 struct PairHash
 {
