@@ -119,7 +119,7 @@ int main(int argc, char* argv[]){
     }
     else{
         // Seed by asking player to type in board
-        std::cout << "Input board dimensions (row, columns): " << std::endl;
+        std::cout << "Input board dimensions (row, columns): " << std::endl; std::cout.flush();
         int r, c;
         std::cin >> r >> c; std::cin.ignore();
         // Create 2D char array for Sokoban init
@@ -176,6 +176,8 @@ int main(int argc, char* argv[]){
     }
     std::cout << goal.get();
     std::cout << "This is the goal state: " << sokoban->is_goal_state(goal.get()) << " (should be 1)" << std::endl;
+
+    std::cout.flush();
     
     // Grab a puzzle heuristic class
     //Heuristic* sokoban_heu = new SokobanHeuristic();

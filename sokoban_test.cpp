@@ -48,8 +48,7 @@ int main(int argc, char* argv[]){
     if (in_file) printf("File: %s\n",in_file);
     else printf("File: None (console input)\n");
     printf("Weight: %.3lf\n",weight);
-    printf("Algo: %s\nContinue? [ENTER]",algo.c_str());
-    //std::string tmp; getline(std::cin, tmp);
+    printf("Algo: %s\n",algo.c_str());
     std::cout << std::endl;
 
     // Check if we have agent (save us some startup time)

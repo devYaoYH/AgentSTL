@@ -60,8 +60,8 @@ int main(int argc, char* argv[]){
     printf("Running %dx%d NPuzzle Test:\n",dim_x,dim_y);
     printf("Scrambles: %d\n",scramble_num);
     printf("Weight: %.3lf\n",weight);
-    printf("Algo: %s\nContinue? [ENTER]",algo.c_str());
-    std::string tmp; getline(std::cin, tmp);
+    printf("Algo: %s\n",algo.c_str());
+    std::cout << std::endl;
 
     NPuzzle* np = new NPuzzle(dim_y, dim_x);
     std::shared_ptr<State> goal = np->get_goal_state();
