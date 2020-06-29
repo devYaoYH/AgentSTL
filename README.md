@@ -2,6 +2,22 @@
 
 The goal of this open repository is to implement commonly-used search agent algorithms in a problem-agnostic way such we can run these just like STL algorithms on a specified 'Game' class for different problems.
 
+With this framework, if you can describe a game with state and actions together with some state-scoring heuristic, you can plug in a number of 'standard' search agents to optimize/approximate solutions:
+```cpp
+Game* my_game = new MyGame();
+Heuristic* heuristic = new MyGameHeuristic(); // Known heuristic for MyGame
+
+Agent* solver = new AStarSearchAgent(my_game, heuristic);
+
+std::vector<std::shared_ptr<Action>> actions;
+solver->solve(actions); // Solver uses weighted-A* to search for solution given heuristic
+
+for (std::shared_ptr<Action> a: actions){
+    my_game->play(a.get()); // Retrace the solution found by agent
+    cout << my_game->get_state(); // Display series of states in solution
+}
+```
+
 Currently, the list of implemented algorithms:
 - weighted-A*
 - [WIP] Minimax
